@@ -3,6 +3,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 --==================================================
 -- SETTINGS
@@ -10,95 +11,84 @@ local LocalPlayer = Players.LocalPlayer
 
 local PASSWORD = "ram"
 
+local ESP_ENABLED = false
+local TARGET_PLAYER = nil
+
 local NORMAL_COLOR = Color3.fromRGB(180, 0, 255)
 local TARGET_COLOR = Color3.fromRGB(0, 120, 255)
 
 local NORMAL_RAINBOW = false
 local TARGET_RAINBOW = false
 
-local ESP_ENABLED = false
-local targetPlayer = nil
-local espData = {}
+local ESP_DATA = {}
 
 --==================================================
 -- 50 COLORS + RAINBOW
 --==================================================
 
 local COLORS = {
-	{"Purple", Color3.fromRGB(180, 0, 255)},
-	{"Blue", Color3.fromRGB(0, 120, 255)},
-	{"Red", Color3.fromRGB(255, 50, 50)},
-	{"Green", Color3.fromRGB(50, 255, 80)},
-	{"Yellow", Color3.fromRGB(255, 230, 40)},
-	{"White", Color3.fromRGB(255, 255, 255)},
-	{"Orange", Color3.fromRGB(255, 140, 0)},
-	{"Pink", Color3.fromRGB(255, 80, 180)},
-	{"Cyan", Color3.fromRGB(0, 255, 255)},
-	{"Lime", Color3.fromRGB(150, 255, 0)},
-	{"Teal", Color3.fromRGB(0, 200, 180)},
-	{"Gold", Color3.fromRGB(255, 190, 0)},
-	{"Magenta", Color3.fromRGB(255, 0, 255)},
-	{"Navy", Color3.fromRGB(40, 70, 200)},
-	{"Sky Blue", Color3.fromRGB(80, 190, 255)},
-	{"Mint", Color3.fromRGB(100, 255, 190)},
-	{"Crimson", Color3.fromRGB(190, 20, 50)},
-	{"Violet", Color3.fromRGB(120, 40, 255)},
-	{"Brown", Color3.fromRGB(150, 80, 30)},
-	{"Gray", Color3.fromRGB(160, 160, 160)},
-	{"Dark Purple", Color3.fromRGB(75, 0, 120)},
-	{"Lavender", Color3.fromRGB(190, 150, 255)},
-	{"Indigo", Color3.fromRGB(75, 0, 180)},
-	{"Royal Blue", Color3.fromRGB(65, 105, 225)},
-	{"Aqua", Color3.fromRGB(0, 255, 220)},
-	{"Turquoise", Color3.fromRGB(64, 224, 208)},
-	{"Emerald", Color3.fromRGB(0, 180, 100)},
-	{"Forest", Color3.fromRGB(20, 110, 50)},
-	{"Olive", Color3.fromRGB(130, 140, 30)},
-	{"Amber", Color3.fromRGB(255, 190, 40)},
-	{"Coral", Color3.fromRGB(255, 110, 90)},
-	{"Salmon", Color3.fromRGB(250, 130, 120)},
-	{"Hot Pink", Color3.fromRGB(255, 20, 150)},
-	{"Rose", Color3.fromRGB(255, 70, 110)},
-	{"Maroon", Color3.fromRGB(120, 0, 30)},
-	{"Silver", Color3.fromRGB(200, 200, 210)},
-	{"Dark Gray", Color3.fromRGB(80, 80, 85)},
-	{"Dark Red", Color3.fromRGB(130, 0, 0)},
-	{"Dark Blue", Color3.fromRGB(0, 40, 120)},
-	{"Dark Green", Color3.fromRGB(0, 100, 40)},
-	{"Neon Green", Color3.fromRGB(50, 255, 0)},
-	{"Neon Blue", Color3.fromRGB(0, 200, 255)},
-	{"Neon Pink", Color3.fromRGB(255, 0, 100)},
-	{"Peach", Color3.fromRGB(255, 180, 140)},
-	{"Cream", Color3.fromRGB(255, 245, 200)},
-	{"Ice Blue", Color3.fromRGB(170, 230, 255)},
-	{"Electric Purple", Color3.fromRGB(140, 0, 255)},
-	{"Electric Orange", Color3.fromRGB(255, 90, 0)},
-	{"Electric Yellow", Color3.fromRGB(255, 255, 0)},
-	{"Electric Cyan", Color3.fromRGB(0, 255, 180)},
+	{"Purple", Color3.fromRGB(180,0,255)},
+	{"Blue", Color3.fromRGB(0,120,255)},
+	{"Red", Color3.fromRGB(255,50,50)},
+	{"Green", Color3.fromRGB(50,255,80)},
+	{"Yellow", Color3.fromRGB(255,230,40)},
+	{"White", Color3.fromRGB(255,255,255)},
+	{"Orange", Color3.fromRGB(255,140,0)},
+	{"Pink", Color3.fromRGB(255,80,180)},
+	{"Cyan", Color3.fromRGB(0,255,255)},
+	{"Lime", Color3.fromRGB(150,255,0)},
+	{"Teal", Color3.fromRGB(0,200,180)},
+	{"Gold", Color3.fromRGB(255,190,0)},
+	{"Magenta", Color3.fromRGB(255,0,255)},
+	{"Navy", Color3.fromRGB(40,70,200)},
+	{"Sky Blue", Color3.fromRGB(80,190,255)},
+	{"Mint", Color3.fromRGB(100,255,190)},
+	{"Crimson", Color3.fromRGB(190,20,50)},
+	{"Violet", Color3.fromRGB(120,40,255)},
+	{"Brown", Color3.fromRGB(150,80,30)},
+	{"Gray", Color3.fromRGB(160,160,160)},
+	{"Dark Purple", Color3.fromRGB(75,0,120)},
+	{"Lavender", Color3.fromRGB(190,150,255)},
+	{"Indigo", Color3.fromRGB(75,0,180)},
+	{"Royal Blue", Color3.fromRGB(65,105,225)},
+	{"Aqua", Color3.fromRGB(0,255,220)},
+	{"Turquoise", Color3.fromRGB(64,224,208)},
+	{"Emerald", Color3.fromRGB(0,180,100)},
+	{"Forest", Color3.fromRGB(20,110,50)},
+	{"Olive", Color3.fromRGB(130,140,30)},
+	{"Amber", Color3.fromRGB(255,190,40)},
+	{"Coral", Color3.fromRGB(255,110,90)},
+	{"Salmon", Color3.fromRGB(250,130,120)},
+	{"Hot Pink", Color3.fromRGB(255,20,150)},
+	{"Rose", Color3.fromRGB(255,70,110)},
+	{"Maroon", Color3.fromRGB(120,0,30)},
+	{"Silver", Color3.fromRGB(200,200,210)},
+	{"Dark Gray", Color3.fromRGB(80,80,85)},
+	{"Dark Red", Color3.fromRGB(130,0,0)},
+	{"Dark Blue", Color3.fromRGB(0,40,120)},
+	{"Dark Green", Color3.fromRGB(0,100,40)},
+	{"Neon Green", Color3.fromRGB(50,255,0)},
+	{"Neon Blue", Color3.fromRGB(0,200,255)},
+	{"Neon Pink", Color3.fromRGB(255,0,100)},
+	{"Peach", Color3.fromRGB(255,180,140)},
+	{"Cream", Color3.fromRGB(255,245,200)},
+	{"Ice Blue", Color3.fromRGB(170,230,255)},
+	{"Electric Purple", Color3.fromRGB(140,0,255)},
+	{"Electric Orange", Color3.fromRGB(255,90,0)},
+	{"Electric Yellow", Color3.fromRGB(255,255,0)},
+	{"Electric Cyan", Color3.fromRGB(0,255,180)},
 	{"Rainbow", "Rainbow"}
 }
 
---==================================================
--- RAINBOW
---==================================================
-
 local function rainbowColor()
-
-	return Color3.fromHSV(
-		(os.clock() * 0.25) % 1,
-		1,
-		1
-	)
+	return Color3.fromHSV((os.clock() * 0.25) % 1, 1, 1)
 end
 
 local function getPlayerColor(player)
-
-	if player == targetPlayer then
-
+	if player == TARGET_PLAYER then
 		if TARGET_RAINBOW then
 			return rainbowColor()
 		end
-
 		return TARGET_COLOR
 	end
 
@@ -113,297 +103,298 @@ end
 -- SCREEN GUI
 --==================================================
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "GameESP"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GameESP"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
 
 --==================================================
--- PASSWORD
+-- PASSWORD WINDOW
 --==================================================
 
-local passwordFrame = Instance.new("Frame")
-passwordFrame.Size = UDim2.fromOffset(280, 170)
-passwordFrame.Position = UDim2.fromScale(0.5, 0.5)
-passwordFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-passwordFrame.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
-passwordFrame.Parent = screenGui
+local PasswordFrame = Instance.new("Frame")
+PasswordFrame.Size = UDim2.fromOffset(280, 170)
+PasswordFrame.Position = UDim2.fromScale(0.5, 0.5)
+PasswordFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+PasswordFrame.BackgroundColor3 = Color3.fromRGB(25,20,30)
+PasswordFrame.Parent = ScreenGui
 
-local passwordCorner = Instance.new("UICorner")
-passwordCorner.CornerRadius = UDim.new(0, 10)
-passwordCorner.Parent = passwordFrame
+local PasswordCorner = Instance.new("UICorner")
+PasswordCorner.CornerRadius = UDim.new(0,10)
+PasswordCorner.Parent = PasswordFrame
 
-local passwordTitle = Instance.new("TextLabel")
-passwordTitle.Size = UDim2.new(1, 0, 0, 40)
-passwordTitle.BackgroundTransparency = 1
-passwordTitle.Text = "ENTER PASSWORD"
-passwordTitle.TextColor3 = NORMAL_COLOR
-passwordTitle.TextSize = 18
-passwordTitle.Font = Enum.Font.GothamBold
-passwordTitle.Parent = passwordFrame
+local PasswordStroke = Instance.new("UIStroke")
+PasswordStroke.Color = NORMAL_COLOR
+PasswordStroke.Thickness = 2
+PasswordStroke.Parent = PasswordFrame
 
-local passwordBox = Instance.new("TextBox")
-passwordBox.Size = UDim2.new(1, -30, 0, 42)
-passwordBox.Position = UDim2.fromOffset(15, 50)
-passwordBox.BackgroundColor3 = Color3.fromRGB(40, 35, 45)
-passwordBox.TextColor3 = Color3.new(1, 1, 1)
-passwordBox.PlaceholderText = "Password..."
-passwordBox.Text = ""
-passwordBox.TextSize = 16
-passwordBox.Font = Enum.Font.Gotham
-passwordBox.ClearTextOnFocus = false
-passwordBox.Parent = passwordFrame
+local PasswordTitle = Instance.new("TextLabel")
+PasswordTitle.Size = UDim2.new(1,0,0,40)
+PasswordTitle.BackgroundTransparency = 1
+PasswordTitle.Text = "ENTER PASSWORD"
+PasswordTitle.TextColor3 = NORMAL_COLOR
+PasswordTitle.TextSize = 18
+PasswordTitle.Font = Enum.Font.GothamBold
+PasswordTitle.Parent = PasswordFrame
 
-local enterButton = Instance.new("TextButton")
-enterButton.Size = UDim2.new(1, -30, 0, 42)
-enterButton.Position = UDim2.fromOffset(15, 105)
-enterButton.BackgroundColor3 = Color3.fromRGB(40, 30, 50)
-enterButton.TextColor3 = NORMAL_COLOR
-enterButton.Text = "ENTER"
-enterButton.TextSize = 16
-enterButton.Font = Enum.Font.GothamBold
-enterButton.Parent = passwordFrame
+local PasswordBox = Instance.new("TextBox")
+PasswordBox.Size = UDim2.new(1,-30,0,42)
+PasswordBox.Position = UDim2.fromOffset(15,50)
+PasswordBox.BackgroundColor3 = Color3.fromRGB(40,35,45)
+PasswordBox.TextColor3 = Color3.new(1,1,1)
+PasswordBox.PlaceholderText = "Password..."
+PasswordBox.Text = ""
+PasswordBox.TextSize = 16
+PasswordBox.Font = Enum.Font.Gotham
+PasswordBox.ClearTextOnFocus = false
+PasswordBox.Parent = PasswordFrame
+
+local EnterButton = Instance.new("TextButton")
+EnterButton.Size = UDim2.new(1,-30,0,42)
+EnterButton.Position = UDim2.fromOffset(15,105)
+EnterButton.BackgroundColor3 = Color3.fromRGB(40,30,50)
+EnterButton.Text = "ENTER"
+EnterButton.TextColor3 = NORMAL_COLOR
+EnterButton.TextSize = 16
+EnterButton.Font = Enum.Font.GothamBold
+EnterButton.Parent = PasswordFrame
+
+--==================================================
+-- MENU BUTTON
+-- Başlangıçta gizli!
+--==================================================
+
+local MenuButton = Instance.new("TextButton")
+MenuButton.Size = UDim2.fromOffset(60,36)
+MenuButton.Position = UDim2.fromOffset(10,100)
+MenuButton.BackgroundColor3 = Color3.fromRGB(35,25,45)
+MenuButton.Text = "MENU"
+MenuButton.TextColor3 = NORMAL_COLOR
+MenuButton.TextSize = 13
+MenuButton.Font = Enum.Font.GothamBold
+MenuButton.Visible = false
+MenuButton.Parent = ScreenGui
+
+local MenuCorner = Instance.new("UICorner")
+MenuCorner.CornerRadius = UDim.new(0,8)
+MenuCorner.Parent = MenuButton
 
 --==================================================
 -- MAIN GUI
 --==================================================
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.fromOffset(215, 410)
-mainFrame.Position = UDim2.fromOffset(20, 150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
-mainFrame.Visible = false
-mainFrame.Active = true
-mainFrame.Parent = screenGui
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.fromOffset(215,410)
+MainFrame.Position = UDim2.fromOffset(20,150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25,20,30)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 10)
-mainCorner.Parent = mainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0,10)
+MainCorner.Parent = MainFrame
 
-local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = NORMAL_COLOR
-mainStroke.Thickness = 2
-mainStroke.Parent = mainFrame
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = NORMAL_COLOR
+MainStroke.Thickness = 2
+MainStroke.Parent = MainFrame
 
 --==================================================
--- TITLE BAR
+-- TITLE / DRAG BAR
 --==================================================
 
-local titleBar = Instance.new("TextLabel")
-titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.BackgroundColor3 = Color3.fromRGB(35, 25, 45)
-titleBar.Text = "GAME ESP"
-titleBar.TextColor3 = NORMAL_COLOR
-titleBar.TextSize = 16
-titleBar.Font = Enum.Font.GothamBold
-titleBar.Active = true
-titleBar.Parent = mainFrame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 10)
-titleCorner.Parent = titleBar
+local TitleBar = Instance.new("TextLabel")
+TitleBar.Size = UDim2.new(1,0,0,35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(35,25,45)
+TitleBar.Text = "GAME ESP"
+TitleBar.TextColor3 = NORMAL_COLOR
+TitleBar.TextSize = 16
+TitleBar.Font = Enum.Font.GothamBold
+TitleBar.Active = true
+TitleBar.Parent = MainFrame
 
 --==================================================
 -- BUTTON FUNCTION
 --==================================================
 
-local function makeButton(text, y, color)
+local function createButton(text, y, color)
 
-	local button = Instance.new("TextButton")
+	local Button = Instance.new("TextButton")
 
-	button.Size = UDim2.fromOffset(185, 40)
-	button.Position = UDim2.fromOffset(15, y)
-	button.BackgroundColor3 = Color3.fromRGB(40, 30, 50)
-	button.TextColor3 = color
-	button.Text = text
-	button.TextSize = 15
-	button.Font = Enum.Font.GothamBold
-	button.Parent = mainFrame
+	Button.Size = UDim2.fromOffset(185,40)
+	Button.Position = UDim2.fromOffset(15,y)
+	Button.BackgroundColor3 = Color3.fromRGB(40,30,50)
+	Button.Text = text
+	Button.TextColor3 = color
+	Button.TextSize = 15
+	Button.Font = Enum.Font.GothamBold
+	Button.Parent = MainFrame
 
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 7)
-	corner.Parent = button
+	local Corner = Instance.new("UICorner")
+	Corner.CornerRadius = UDim.new(0,7)
+	Corner.Parent = Button
 
-	return button
+	return Button
 end
 
 --==================================================
 -- CONTROLS
 --==================================================
 
-local espButton =
-	makeButton("ESP: OFF", 45, NORMAL_COLOR)
+local ESPButton = createButton(
+	"ESP: OFF",
+	45,
+	NORMAL_COLOR
+)
 
-local nameBox = Instance.new("TextBox")
-nameBox.Size = UDim2.fromOffset(185, 40)
-nameBox.Position = UDim2.fromOffset(15, 92)
-nameBox.BackgroundColor3 = Color3.fromRGB(40, 30, 50)
-nameBox.TextColor3 = Color3.new(1, 1, 1)
-nameBox.PlaceholderText = "Player name..."
-nameBox.Text = ""
-nameBox.TextSize = 14
-nameBox.Font = Enum.Font.Gotham
-nameBox.Parent = mainFrame
+local NameBox = Instance.new("TextBox")
+NameBox.Size = UDim2.fromOffset(185,40)
+NameBox.Position = UDim2.fromOffset(15,92)
+NameBox.BackgroundColor3 = Color3.fromRGB(40,30,50)
+NameBox.TextColor3 = Color3.new(1,1,1)
+NameBox.PlaceholderText = "Player name..."
+NameBox.Text = ""
+NameBox.TextSize = 14
+NameBox.Font = Enum.Font.Gotham
+NameBox.ClearTextOnFocus = false
+NameBox.Parent = MainFrame
 
-local targetButton =
-	makeButton("SET TARGET", 140, TARGET_COLOR)
+local TargetButton = createButton(
+	"SET TARGET",
+	140,
+	TARGET_COLOR
+)
 
-local normalColorButton =
-	makeButton("Normal: Purple", 188, NORMAL_COLOR)
+local NormalColorButton = createButton(
+	"Normal: Purple",
+	188,
+	NORMAL_COLOR
+)
 
-local targetColorButton =
-	makeButton("Target: Blue", 236, TARGET_COLOR)
+local TargetColorButton = createButton(
+	"Target: Blue",
+	236,
+	TARGET_COLOR
+)
 
 --==================================================
--- SCROLLABLE COLOR LIST
+-- SCROLLABLE COLOR MENU
 --==================================================
 
-local colorFrame = Instance.new("ScrollingFrame")
+local ColorFrame = Instance.new("ScrollingFrame")
+ColorFrame.Size = UDim2.fromOffset(185,125)
+ColorFrame.Position = UDim2.fromOffset(15,283)
+ColorFrame.BackgroundColor3 = Color3.fromRGB(30,25,35)
+ColorFrame.BorderSizePixel = 0
+ColorFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ColorFrame.CanvasSize = UDim2.fromOffset(0,0)
+ColorFrame.ScrollBarThickness = 7
+ColorFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+ColorFrame.Visible = false
+ColorFrame.ZIndex = 20
+ColorFrame.Parent = MainFrame
 
-colorFrame.Size = UDim2.fromOffset(185, 125)
-colorFrame.Position = UDim2.fromOffset(15, 283)
+local ColorCorner = Instance.new("UICorner")
+ColorCorner.CornerRadius = UDim.new(0,7)
+ColorCorner.Parent = ColorFrame
 
-colorFrame.BackgroundColor3 =
-	Color3.fromRGB(30, 25, 35)
+local ColorLayout = Instance.new("UIListLayout")
+ColorLayout.Padding = UDim.new(0,5)
+ColorLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ColorLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ColorLayout.Parent = ColorFrame
 
-colorFrame.BorderSizePixel = 0
+local ColorPadding = Instance.new("UIPadding")
+ColorPadding.PaddingTop = UDim.new(0,5)
+ColorPadding.PaddingBottom = UDim.new(0,5)
+ColorPadding.Parent = ColorFrame
 
-colorFrame.AutomaticCanvasSize =
-	Enum.AutomaticSize.Y
-
-colorFrame.CanvasSize =
-	UDim2.fromOffset(0, 0)
-
-colorFrame.ScrollBarThickness = 7
-
-colorFrame.ScrollingDirection =
-	Enum.ScrollingDirection.Y
-
-colorFrame.Visible = false
-
-colorFrame.ZIndex = 20
-
-colorFrame.Parent = mainFrame
-
-local colorCorner = Instance.new("UICorner")
-colorCorner.CornerRadius = UDim.new(0, 7)
-colorCorner.Parent = colorFrame
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 5)
-layout.HorizontalAlignment =
-	Enum.HorizontalAlignment.Center
-layout.SortOrder =
-	Enum.SortOrder.LayoutOrder
-layout.Parent = colorFrame
-
-local padding = Instance.new("UIPadding")
-padding.PaddingTop = UDim.new(0, 5)
-padding.PaddingBottom = UDim.new(0, 5)
-padding.Parent = colorFrame
-
-local selectedMode = "Normal"
+local SelectedMode = "Normal"
 
 --==================================================
 -- COLOR BUTTONS
 --==================================================
 
-for index, colorInfo in ipairs(COLORS) do
+for index, info in ipairs(COLORS) do
 
-	local colorName = colorInfo[1]
-	local colorValue = colorInfo[2]
+	local ColorName = info[1]
+	local ColorValue = info[2]
 
-	local button = Instance.new("TextButton")
+	local Button = Instance.new("TextButton")
 
-	button.Size = UDim2.fromOffset(165, 28)
+	Button.Size = UDim2.fromOffset(165,28)
+	Button.LayoutOrder = index
+	Button.ZIndex = 21
+	Button.Text = ColorName
+	Button.TextSize = 13
+	Button.Font = Enum.Font.GothamBold
 
-	button.BackgroundColor3 =
-		colorValue == "Rainbow"
-		and Color3.fromRGB(255, 0, 255)
-		or colorValue
+	if ColorValue == "Rainbow" then
+		Button.BackgroundColor3 = Color3.fromRGB(255,0,255)
+	else
+		Button.BackgroundColor3 = ColorValue
+	end
 
-	button.Text = colorName
+	Button.TextColor3 = Color3.new(0,0,0)
+	Button.Parent = ColorFrame
 
-	button.TextColor3 =
-		Color3.new(0, 0, 0)
+	local Corner = Instance.new("UICorner")
+	Corner.CornerRadius = UDim.new(0,5)
+	Corner.Parent = Button
 
-	button.TextSize = 13
-	button.Font = Enum.Font.GothamBold
+	Button.Activated:Connect(function()
 
-	button.LayoutOrder = index
+		if ColorName == "Rainbow" then
 
-	button.ZIndex = 21
-	button.Parent = colorFrame
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 5)
-	corner.Parent = button
-
-	button.Activated:Connect(function()
-
-		if colorName == "Rainbow" then
-
-			if selectedMode == "Normal" then
-
+			if SelectedMode == "Normal" then
 				NORMAL_RAINBOW = true
-				normalColorButton.Text =
-					"Normal: Rainbow"
-
+				NormalColorButton.Text = "Normal: Rainbow"
 			else
-
 				TARGET_RAINBOW = true
-				targetColorButton.Text =
-					"Target: Rainbow"
+				TargetColorButton.Text = "Target: Rainbow"
 			end
 
 		else
 
-			if selectedMode == "Normal" then
+			if SelectedMode == "Normal" then
 
 				NORMAL_RAINBOW = false
-				NORMAL_COLOR = colorValue
+				NORMAL_COLOR = ColorValue
 
-				normalColorButton.Text =
-					"Normal: " .. colorName
+				NormalColorButton.Text =
+					"Normal: "..ColorName
 
-				normalColorButton.TextColor3 =
+				NormalColorButton.TextColor3 =
 					NORMAL_COLOR
 
 			else
 
 				TARGET_RAINBOW = false
-				TARGET_COLOR = colorValue
+				TARGET_COLOR = ColorValue
 
-				targetColorButton.Text =
-					"Target: " .. colorName
+				TargetColorButton.Text =
+					"Target: "..ColorName
 
-				targetColorButton.TextColor3 =
+				TargetColorButton.TextColor3 =
 					TARGET_COLOR
 			end
 		end
 
-		colorFrame.Visible = false
-
-		if ESP_ENABLED then
-			updateESP()
-		end
+		ColorFrame.Visible = false
 	end)
 end
 
-normalColorButton.Activated:Connect(function()
+NormalColorButton.Activated:Connect(function()
 
-	selectedMode = "Normal"
-
-	colorFrame.Visible =
-		not colorFrame.Visible
+	SelectedMode = "Normal"
+	ColorFrame.Visible = not ColorFrame.Visible
 end)
 
-targetColorButton.Activated:Connect(function()
+TargetColorButton.Activated:Connect(function()
 
-	selectedMode = "Target"
-
-	colorFrame.Visible =
-		not colorFrame.Visible
+	SelectedMode = "Target"
+	ColorFrame.Visible = not ColorFrame.Visible
 end)
 
 --==================================================
@@ -412,194 +403,104 @@ end)
 
 local function removeESP(player)
 
-	local data = espData[player]
+	local Data = ESP_DATA[player]
 
-	if not data then
+	if not Data then
 		return
 	end
 
-	if data.Billboard then
-		data.Billboard:Destroy()
+	if Data.Billboard then
+		Data.Billboard:Destroy()
 	end
 
-	if data.Highlight then
-		data.Highlight:Destroy()
+	if Data.Highlight then
+		Data.Highlight:Destroy()
 	end
 
-	espData[player] = nil
+	ESP_DATA[player] = nil
 end
 
 --==================================================
 -- CREATE ESP
 --==================================================
 
-function createESP(player)
+local function createESP(player)
 
 	if player == LocalPlayer then
 		return
 	end
 
-	local character = player.Character
+	local Character = player.Character
 
-	if not character then
+	if not Character then
 		return
 	end
 
-	local head =
-		character:FindFirstChild("Head")
+	local Head = Character:FindFirstChild("Head")
+	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
 
-	local humanoid =
-		character:FindFirstChildOfClass("Humanoid")
-
-	if not head or not humanoid then
+	if not Head or not Humanoid then
 		return
 	end
 
 	removeESP(player)
 
-	local color =
-		getPlayerColor(player)
+	local Color = getPlayerColor(player)
 
-	local highlight =
-		Instance.new("Highlight")
+	local Highlight = Instance.new("Highlight")
+	Highlight.Name = "GameESPHighlight"
+	Highlight.Adornee = Character
+	Highlight.FillColor = Color
+	Highlight.OutlineColor = Color
+	Highlight.FillTransparency = 0.75
+	Highlight.OutlineTransparency = 0
+	Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	Highlight.Parent = Character
 
-	highlight.Name =
-		"GameESPHighlight"
+	local Billboard = Instance.new("BillboardGui")
+	Billboard.Name = "GameESPInfo"
+	Billboard.Adornee = Head
+	Billboard.Size = UDim2.fromOffset(220,85)
+	Billboard.StudsOffset = Vector3.new(0,3.2,0)
+	Billboard.AlwaysOnTop = true
+	Billboard.Parent = ScreenGui
 
-	highlight.Adornee =
-		character
+	local NameLabel = Instance.new("TextLabel")
+	NameLabel.Size = UDim2.new(1,0,0,27)
+	NameLabel.BackgroundTransparency = 1
+	NameLabel.Text = player.Name
+	NameLabel.TextColor3 = Color
+	NameLabel.TextStrokeTransparency = 0
+	NameLabel.TextSize = 18
+	NameLabel.Font = Enum.Font.GothamBold
+	NameLabel.Parent = Billboard
 
-	highlight.FillColor =
-		color
+	local HealthLabel = Instance.new("TextLabel")
+	HealthLabel.Position = UDim2.fromOffset(0,27)
+	HealthLabel.Size = UDim2.new(1,0,0,27)
+	HealthLabel.BackgroundTransparency = 1
+	HealthLabel.TextColor3 = Color
+	HealthLabel.TextStrokeTransparency = 0
+	HealthLabel.TextSize = 16
+	HealthLabel.Font = Enum.Font.GothamBold
+	HealthLabel.Parent = Billboard
 
-	highlight.OutlineColor =
-		color
+	local DistanceLabel = Instance.new("TextLabel")
+	DistanceLabel.Position = UDim2.fromOffset(0,54)
+	DistanceLabel.Size = UDim2.new(1,0,0,27)
+	DistanceLabel.BackgroundTransparency = 1
+	DistanceLabel.TextColor3 = Color
+	DistanceLabel.TextStrokeTransparency = 0
+	DistanceLabel.TextSize = 15
+	DistanceLabel.Font = Enum.Font.Gotham
+	DistanceLabel.Parent = Billboard
 
-	highlight.FillTransparency =
-		0.75
-
-	highlight.OutlineTransparency =
-		0
-
-	highlight.DepthMode =
-		Enum.HighlightDepthMode.AlwaysOnTop
-
-	highlight.Parent =
-		character
-
-	local billboard =
-		Instance.new("BillboardGui")
-
-	billboard.Name =
-		"GameESPInfo"
-
-	billboard.Adornee =
-		head
-
-	billboard.Size =
-		UDim2.fromOffset(220, 85)
-
-	billboard.StudsOffset =
-		Vector3.new(0, 3.2, 0)
-
-	billboard.AlwaysOnTop =
-		true
-
-	billboard.Parent =
-		screenGui
-
-	local nameLabel =
-		Instance.new("TextLabel")
-
-	nameLabel.Size =
-		UDim2.new(1, 0, 0, 27)
-
-	nameLabel.BackgroundTransparency =
-		1
-
-	nameLabel.Text =
-		player.Name
-
-	nameLabel.TextColor3 =
-		color
-
-	nameLabel.TextStrokeTransparency =
-		0
-
-	nameLabel.TextSize =
-		18
-
-	nameLabel.Font =
-		Enum.Font.GothamBold
-
-	nameLabel.Parent =
-		billboard
-
-	local healthLabel =
-		Instance.new("TextLabel")
-
-	healthLabel.Position =
-		UDim2.fromOffset(0, 27)
-
-	healthLabel.Size =
-		UDim2.new(1, 0, 0, 27)
-
-	healthLabel.BackgroundTransparency =
-		1
-
-	healthLabel.TextColor3 =
-		color
-
-	healthLabel.TextStrokeTransparency =
-		0
-
-	healthLabel.TextSize =
-		16
-
-	healthLabel.Font =
-		Enum.Font.GothamBold
-
-	healthLabel.Parent =
-		billboard
-
-	local distanceLabel =
-		Instance.new("TextLabel")
-
-	distanceLabel.Position =
-		UDim2.fromOffset(0, 54)
-
-	distanceLabel.Size =
-		UDim2.new(1, 0, 0, 27)
-
-	distanceLabel.BackgroundTransparency =
-		1
-
-	distanceLabel.TextColor3 =
-		color
-
-	distanceLabel.TextStrokeTransparency =
-		0
-
-	distanceLabel.TextSize =
-		15
-
-	distanceLabel.Font =
-		Enum.Font.Gotham
-
-	distanceLabel.Parent =
-		billboard
-
-	espData[player] = {
-
-		Billboard = billboard,
-
-		Highlight = highlight,
-
-		NameLabel = nameLabel,
-
-		HealthLabel = healthLabel,
-
-		DistanceLabel = distanceLabel
+	ESP_DATA[player] = {
+		Billboard = Billboard,
+		Highlight = Highlight,
+		NameLabel = NameLabel,
+		HealthLabel = HealthLabel,
+		DistanceLabel = DistanceLabel
 	}
 end
 
@@ -607,7 +508,7 @@ end
 -- UPDATE ESP
 --==================================================
 
-function updateESP()
+local function updateESP()
 
 	for _, player in ipairs(Players:GetPlayers()) do
 
@@ -628,29 +529,30 @@ end
 
 local function checkPassword()
 
-	if passwordBox.Text == PASSWORD then
+	if PasswordBox.Text == PASSWORD then
 
-		passwordFrame.Visible = false
-		mainFrame.Visible = true
+		PasswordFrame.Visible = false
+
+		-- Ana GUI açılır
+		MainFrame.Visible = true
+
+		-- MENU artık görünür
+		MenuButton.Visible = true
 
 	else
 
-		passwordTitle.Text =
-			"WRONG PASSWORD"
+		PasswordTitle.Text = "WRONG PASSWORD"
+		PasswordBox.Text = ""
 
-		passwordBox.Text = ""
-
-		task.delay(1, function()
-
-			passwordTitle.Text =
-				"ENTER PASSWORD"
+		task.delay(1,function()
+			PasswordTitle.Text = "ENTER PASSWORD"
 		end)
 	end
 end
 
-enterButton.Activated:Connect(checkPassword)
+EnterButton.Activated:Connect(checkPassword)
 
-passwordBox.FocusLost:Connect(function(enterPressed)
+PasswordBox.FocusLost:Connect(function(enterPressed)
 
 	if enterPressed then
 		checkPassword()
@@ -658,18 +560,33 @@ passwordBox.FocusLost:Connect(function(enterPressed)
 end)
 
 --==================================================
--- ESP BUTTON
+-- MENU OPEN / CLOSE
 --==================================================
 
-espButton.Activated:Connect(function()
+MenuButton.Activated:Connect(function()
 
-	ESP_ENABLED =
-		not ESP_ENABLED
+	MainFrame.Visible = not MainFrame.Visible
 
-	espButton.Text =
-		ESP_ENABLED
-		and "ESP: ON"
-		or "ESP: OFF"
+	if MainFrame.Visible then
+		MenuButton.Text = "HIDE"
+	else
+		MenuButton.Text = "MENU"
+	end
+end)
+
+--==================================================
+-- ESP ON / OFF
+--==================================================
+
+ESPButton.Activated:Connect(function()
+
+	ESP_ENABLED = not ESP_ENABLED
+
+	if ESP_ENABLED then
+		ESPButton.Text = "ESP: ON"
+	else
+		ESPButton.Text = "ESP: OFF"
+	end
 
 	updateESP()
 end)
@@ -678,38 +595,35 @@ end)
 -- TARGET
 --==================================================
 
-targetButton.Activated:Connect(function()
+TargetButton.Activated:Connect(function()
 
-	local typedName =
-		nameBox.Text:lower()
+	local TypedName = NameBox.Text:lower()
 
-	if typedName == "" then
+	if TypedName == "" then
 		return
 	end
 
-	local foundPlayer
+	local FoundPlayer = nil
 
 	for _, player in ipairs(Players:GetPlayers()) do
 
 		if player ~= LocalPlayer then
 
-			if player.Name:lower() == typedName
-				or player.DisplayName:lower() == typedName then
+			if player.Name:lower() == TypedName
+				or player.DisplayName:lower() == TypedName then
 
-				foundPlayer = player
+				FoundPlayer = player
 				break
 			end
 		end
 	end
 
-	if foundPlayer then
+	if FoundPlayer then
 
-		targetPlayer =
-			foundPlayer
+		TARGET_PLAYER = FoundPlayer
 
-		targetButton.Text =
-			"TARGET: " ..
-			foundPlayer.Name
+		TargetButton.Text =
+			"TARGET: "..FoundPlayer.Name
 
 		if ESP_ENABLED then
 			updateESP()
@@ -717,19 +631,16 @@ targetButton.Activated:Connect(function()
 
 	else
 
-		targetButton.Text =
-			"NOT FOUND"
+		TargetButton.Text = "NOT FOUND"
 
-		task.delay(1.5, function()
-
-			targetButton.Text =
-				"SET TARGET"
+		task.delay(1.5,function()
+			TargetButton.Text = "SET TARGET"
 		end)
 	end
 end)
 
 --==================================================
--- PLAYERS
+-- PLAYER EVENTS
 --==================================================
 
 local function setupPlayer(player)
@@ -748,28 +659,21 @@ local function setupPlayer(player)
 	end)
 end
 
-for _, player in ipairs(
-	Players:GetPlayers()
-) do
-
+for _, player in ipairs(Players:GetPlayers()) do
 	setupPlayer(player)
 end
 
-Players.PlayerAdded:Connect(
-	setupPlayer
-)
+Players.PlayerAdded:Connect(setupPlayer)
 
 Players.PlayerRemoving:Connect(function(player)
 
-	if targetPlayer == player then
-
-		targetPlayer = nil
-
-		targetButton.Text =
-			"SET TARGET"
-	end
-
 	removeESP(player)
+
+	if TARGET_PLAYER == player then
+
+		TARGET_PLAYER = nil
+		TargetButton.Text = "SET TARGET"
+	end
 end)
 
 --==================================================
@@ -782,87 +686,57 @@ RunService.RenderStepped:Connect(function()
 		return
 	end
 
-	local character =
-		LocalPlayer.Character
+	local Character = LocalPlayer.Character
 
-	if not character then
+	if not Character then
 		return
 	end
 
-	local myRoot =
-		character:FindFirstChild(
-			"HumanoidRootPart"
-		)
+	local MyRoot =
+		Character:FindFirstChild("HumanoidRootPart")
 
-	if not myRoot then
+	if not MyRoot then
 		return
 	end
 
-	for player, data in pairs(espData) do
+	for player, Data in pairs(ESP_DATA) do
 
-		local character2 =
-			player.Character
+		local Character2 = player.Character
 
-		if character2 then
+		if Character2 then
 
-			local humanoid =
-				character2:FindFirstChildOfClass(
-					"Humanoid"
-				)
+			local Humanoid =
+				Character2:FindFirstChildOfClass("Humanoid")
 
-			local root =
-				character2:FindFirstChild(
-					"HumanoidRootPart"
-				)
+			local Root =
+				Character2:FindFirstChild("HumanoidRootPart")
 
-			if humanoid and root then
+			if Humanoid and Root then
 
-				local color =
+				local Color =
 					getPlayerColor(player)
 
-				-- Rainbow / color update
+				Data.Highlight.FillColor = Color
+				Data.Highlight.OutlineColor = Color
 
-				data.Highlight.FillColor =
-					color
+				Data.NameLabel.TextColor3 = Color
+				Data.HealthLabel.TextColor3 = Color
+				Data.DistanceLabel.TextColor3 = Color
 
-				data.Highlight.OutlineColor =
-					color
-
-				data.NameLabel.TextColor3 =
-					color
-
-				data.HealthLabel.TextColor3 =
-					color
-
-				data.DistanceLabel.TextColor3 =
-					color
-
-				-- HP
-
-				data.HealthLabel.Text =
+				Data.HealthLabel.Text =
 					string.format(
 						"HP: %d / %d",
-
-						math.floor(
-							humanoid.Health
-						),
-
-						math.floor(
-							humanoid.MaxHealth
-						)
+						math.floor(Humanoid.Health),
+						math.floor(Humanoid.MaxHealth)
 					)
 
-				-- Distance
+				local Distance =
+					(Root.Position - MyRoot.Position).Magnitude
 
-				local distance =
-					(root.Position -
-						myRoot.Position).Magnitude
-
-				data.DistanceLabel.Text =
+				Data.DistanceLabel.Text =
 					string.format(
 						"Distance: %d studs",
-
-						math.floor(distance)
+						math.floor(Distance)
 					)
 			end
 		end
@@ -870,33 +744,25 @@ RunService.RenderStepped:Connect(function()
 end)
 
 --==================================================
--- DRAG GUI
+-- DRAGGABLE MAIN GUI
 --==================================================
 
 local dragging = false
 local dragStart
 local startPosition
 
-titleBar.InputBegan:Connect(function(input)
+TitleBar.InputBegan:Connect(function(input)
 
-	if input.UserInputType ==
-		Enum.UserInputType.MouseButton1
-		or input.UserInputType ==
-		Enum.UserInputType.Touch then
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
 
 		dragging = true
-
-		dragStart =
-			input.Position
-
-		startPosition =
-			mainFrame.Position
+		dragStart = input.Position
+		startPosition = MainFrame.Position
 
 		input.Changed:Connect(function()
 
-			if input.UserInputState ==
-				Enum.UserInputState.End then
-
+			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
 			end
 		end)
@@ -909,26 +775,19 @@ UserInputService.InputChanged:Connect(function(input)
 		return
 	end
 
-	if input.UserInputType ==
-		Enum.UserInputType.MouseMovement
-		or input.UserInputType ==
-		Enum.UserInputType.Touch then
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
 
-		local delta =
+		local Delta =
 			input.Position - dragStart
 
-		mainFrame.Position =
+		MainFrame.Position =
 			UDim2.new(
-
 				startPosition.X.Scale,
-
-				startPosition.X.Offset +
-					delta.X,
+				startPosition.X.Offset + Delta.X,
 
 				startPosition.Y.Scale,
-
-				startPosition.Y.Offset +
-					delta.Y
+				startPosition.Y.Offset + Delta.Y
 			)
 	end
 end)
